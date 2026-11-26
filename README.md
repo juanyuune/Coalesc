@@ -47,7 +47,12 @@ See [docs/deployment.md](docs/deployment.md). Note that there is no login.
 Tested with CD-HIT 4.8.1 and Flask 3.1.3 on Ubuntu 24.04. Chrome was the only browser tried.
 
 ## Citing CD-HIT
-Please cite the CD-HIT papers listed at https://github.com/weizhongli/cdhit when you use results.
+If you use results from this tool, please cite CD-HIT:
+
+- Huang Y, Niu B, Gao Y, Fu L, Li W. CD-HIT Suite: a web server for clustering and comparing biological sequences. *Bioinformatics* 2010;26(5):680-682.
+- Li W, Godzik A. Cd-hit: a fast program for clustering and comparing large sets of protein or nucleotide sequences. *Bioinformatics* 2006;22(13):1658-1659.
+
+More CD-HIT papers are listed at https://github.com/weizhongli/cdhit.
 
 ## License
 MIT for Coalesc's own code (see `LICENSE`).
