@@ -8,6 +8,8 @@ representative sequences and the cluster list. Built for a lab server.
 > CD-HIT is a separate program (GPL v2) that must be installed on the server; it is not
 > included here.
 
+<img src="docs/img/home.png" alt="Coalesc start page" width="420">
+
 ## Features
 - Cluster protein (`cd-hit`) or DNA/RNA (`cd-hit-est`) sequences
 - Compare two sets (`cd-hit-2d`, `cd-hit-est-2d`)
