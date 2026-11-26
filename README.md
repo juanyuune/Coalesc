@@ -10,6 +10,8 @@ representative sequences and the cluster list. Built for a lab server.
 
 <img src="docs/img/home.png" alt="Coalesc start page" width="800">
 
+<img src="docs/img/results.png" alt="Coalesc results page" width="800">
+
 ## Features
 - Cluster protein (`cd-hit`) or DNA/RNA (`cd-hit-est`) sequences
 - Compare two sets (`cd-hit-2d`, `cd-hit-est-2d`)
