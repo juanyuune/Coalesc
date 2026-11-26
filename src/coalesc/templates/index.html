@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coalesc — Bioinformatics Lab 1607b</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpolygon points='23,7 30.79,11.5 30.79,20.5 23,25 15.21,20.5 15.21,11.5' fill='%230e6b62'/%3E%3Cpolygon points='8,4 12.33,6.5 12.33,11.5 8,14 3.67,11.5 3.67,6.5' fill='none' stroke='%230e6b62' stroke-width='1.8'/%3E%3Cpolygon points='8,18 12.33,20.5 12.33,25.5 8,28 3.67,25.5 3.67,20.5' fill='none' stroke='%230e6b62' stroke-width='1.8'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#f6f7f5;--white:#fff;--ink:#1b2320;--muted:#5a6762;
+  --line:#d3d9d5;--line2:#e6eae7;--field:#b4beb8;
+  --accent:#0e6b62;--accent-dk:#0a524b;--accent-soft:#e1efec;
+  --warn:#7a4d00;--warn-bg:#fbf2dc;--err:#9c2222;--err-bg:#fbeaea;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{font-size:15px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;line-height:1.55;min-height:100vh;display:flex;flex-direction:column}
+[hidden]{display:none!important}
+h1,h2,h3,p,dl,dd,fieldset{margin:0;padding:0}
+fieldset{border:0;min-width:0}
+a{color:var(--accent)}
+.wrap{max-width:780px;margin:0 auto;padding:0 24px;width:100%}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.muted{color:var(--muted)}
+
+/* header */
+.top{background:var(--white);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:650;letter-spacing:-.01em}
+.brand svg{display:block}
+.lab{font-size:13px;color:var(--muted)}
+
+/* intro */
+.intro{padding:36px 0 26px}
+.intro h1{font-size:27px;line-height:1.2;font-weight:650;letter-spacing:-.015em;margin-bottom:8px}
+.intro p{max-width:56ch;color:var(--muted)}
+
+/* mode picker */
+.picker{display:flex;flex-wrap:wrap;gap:18px 32px;margin-bottom:12px}
+.picker legend{font-size:13px;font-weight:600;margin-bottom:6px;padding:0}
+.seg{display:inline-flex;background:var(--white);border:1px solid var(--field);border-radius:5px;overflow:hidden}
+.seg label{position:relative;display:block}
+.seg label+label{border-left:1px solid var(--line)}
+.seg input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.seg span{display:block;padding:7px 14px;font-size:14px;white-space:nowrap}
+.seg input:checked+span{background:var(--accent-soft);color:var(--accent-dk);font-weight:600}
+.seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:-2px}
+.mode-note{font-size:13.5px;color:var(--muted);max-width:62ch;min-height:2.9em}
+
+/* tabs */
+.tabs{display:flex;align-items:flex-end;gap:26px;border-bottom:1px solid var(--line);margin-top:22px}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 0;font:inherit;color:var(--muted);cursor:pointer}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected=true]{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.tabs .n{display:inline-block;min-width:1.1em;color:var(--muted);font-weight:400}
+.tabs .done .n{color:var(--accent);font-weight:700}
+.tabs .fname{margin-left:auto;padding-bottom:10px;font-size:13px;color:var(--muted);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.panel{padding:26px 0 40px}
+
+/* file */
+.block+.block{margin-top:26px}
+.block h2{font-size:15px;font-weight:650;margin-bottom:8px}
+.drop{display:block;position:relative;background:var(--white);border:1.5px dashed #9aa6a0;border-radius:6px;padding:26px 22px;cursor:pointer;transition:border-color .12s,background .12s}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.drop strong{display:block;font-weight:600}
+.drop small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.filebox{display:none;align-items:center;gap:12px;margin-top:10px;padding:10px 14px;background:var(--white);border:1px solid var(--line);border-radius:5px}
+.filebox .fn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.filebox .fs{color:var(--muted);font-size:13px;white-space:nowrap}
+.linkbtn{margin-left:auto;background:none;border:0;padding:2px 0;font:inherit;font-size:13px;color:var(--accent);text-decoration:underline;cursor:pointer}
+.check{display:flex;align-items:flex-start;gap:9px;margin-top:22px;cursor:pointer}
+.check input{margin:4px 0 0;accent-color:var(--accent);width:15px;height:15px}
+.check small{color:var(--muted);white-space:nowrap}
+
+/* settings rows */
+.row{display:grid;grid-template-columns:210px 1fr;gap:6px 28px;padding:18px 0;border-top:1px solid var(--line2)}
+.row:first-child{border-top:0;padding-top:0}
+.row>label,.row>.lbl{font-weight:600;font-size:14px;padding-top:7px}
+.row .flag{font-weight:400;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted);margin-top:6px;max-width:58ch}
+.warn{margin-top:8px;padding:8px 12px;background:var(--warn-bg);color:var(--warn);border-radius:4px;font-size:13px;max-width:58ch}
+.pair{display:flex;align-items:center;gap:12px}
+.pair input[type=range]{flex:1;max-width:320px;accent-color:var(--accent);cursor:pointer}
+.pair .pct{color:var(--muted)}
+input[type=number],select{height:36px;padding:0 10px;font:inherit;color:var(--ink);background:var(--white);border:1px solid var(--field);border-radius:4px}
+input[type=number]{width:96px}
+#AL,#AS,#Sdiff{width:136px}
+.pair input[type=number]{width:74px;font-size:16px;font-weight:600}
+select{padding-right:6px}
+input[type=number]:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.two{display:flex;flex-wrap:wrap;gap:12px 28px}
+.two div{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.two div b{font-weight:400}
+.levels .pair+.pair{margin-top:10px}
+.levels .pair span.lv{width:52px;font-size:13px;color:var(--muted)}
+
+details{border-top:1px solid var(--line);margin-top:8px}
+details summary{padding:14px 0;cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .12s;margin:0 4px 0 2px}
+details[open] summary::before{transform:rotate(45deg)}
+details summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details summary small{font-weight:400;color:var(--muted);margin-left:auto}
+.grp{font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 2px}
+.grp:first-child{margin-top:2px}
+
+.runbar{border-top:1px solid var(--line);padding-top:20px;margin-top:6px}
+.btn{display:inline-block;font:inherit;font-weight:600;padding:10px 20px;border-radius:4px;border:1px solid transparent;cursor:pointer;text-decoration:none;line-height:1.3}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover:not(:disabled){background:var(--accent-dk)}
+.btn.primary:disabled{background:#8a9a95;cursor:not-allowed}
+.btn.plain{background:var(--white);border-color:var(--field);color:var(--ink)}
+.btn.plain:hover{border-color:var(--accent);color:var(--accent-dk)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.err{margin:16px 0 0;padding:9px 13px;background:var(--err-bg);color:var(--err);border-radius:4px;font-size:14px}
+.prog{margin-top:16px}
+.prog .t{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+.bar{height:4px;background:var(--line2);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.bar.ind i{width:30%;animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{from{margin-left:-30%}to{margin-left:100%}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* results */
+.empty{color:var(--muted);padding:6px 0}
+.empty b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+.working{display:flex;align-items:center;gap:12px;color:var(--muted)}
+.working i{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite}
+.res-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-bottom:10px}
+.res-head h2{font-size:20px;font-weight:650}
+.res-head span{font-size:13px;color:var(--muted)}
+.lead{font-size:16px;max-width:60ch;margin-bottom:22px}
+.cmp{display:grid;grid-template-columns:140px 1fr 90px;align-items:center;gap:6px 14px;margin-bottom:26px}
+.cmp .track{height:14px;background:var(--line2);border-radius:2px;overflow:hidden}
+.cmp .track i{display:block;height:100%;background:var(--accent);transition:width .5s}
+.cmp .track.full i{background:#9aa6a0}
+.cmp .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 24px;margin-bottom:28px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.facts dt{font-size:13px;color:var(--muted)}
+.facts dd{font-size:21px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.hist h3{font-size:15px;font-weight:650;margin-bottom:2px}
+.hist p{font-size:13px;color:var(--muted);margin-bottom:10px}
+.hist .r{display:grid;grid-template-columns:110px 1fr 70px;gap:12px;align-items:center;padding:3px 0;font-size:14px}
+.hist .r i{display:block;height:10px;background:var(--accent);border-radius:1px;min-width:2px}
+.hist .r b{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.dl{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 10px}
+.dlnote{font-size:13px;color:var(--muted);max-width:62ch}
+.logwrap{margin-top:22px}
+.logwrap pre{margin:8px 0 0;padding:14px;background:#16201d;color:#cfe3de;border-radius:4px;font:12.5px/1.55 Consolas,"Cascadia Mono",monospace;max-height:280px;overflow:auto;white-space:pre-wrap}
+
+/* footer */
+.foot{margin-top:auto;background:var(--white);border-top:1px solid var(--line);padding:20px 0 24px;font-size:13px;color:var(--muted)}
+.foot p+p{margin-top:6px}
+.foot .wrap{display:flex;flex-wrap:wrap;gap:8px 40px;justify-content:space-between}
+.foot .cite{max-width:56ch}
+.foot nav{display:flex;gap:18px}
+
+@media(max-width:640px){
+  .wrap{padding:0 18px}
+  .row{grid-template-columns:1fr}
+  .row>label,.row>.lbl{padding-top:0}
+  .cmp{grid-template-columns:1fr 80px}
+  .cmp .name{grid-column:1/-1;margin-bottom:-2px}
+  .hist .r{grid-template-columns:90px 1fr 56px}
+  .lab{display:none}
+  .intro h1{font-size:23px}
+  .tabs .fname{display:none}
+  .seg.wide{display:flex;flex-direction:column;width:100%}
+  .seg.wide label+label{border-left:0;border-top:1px solid var(--line)}
+  .picker{gap:14px 24px}
+  .picker fieldset:first-child{width:100%}
+  .dl{flex-direction:column}
+  .dl .btn{text-align:center}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .bar.ind i{width:100%;opacity:.5}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 32 32" role="img" aria-label="Coalesc logo">
+        <polygon points="8,4 12.33,6.5 12.33,11.5 8,14 3.67,11.5 3.67,6.5" fill="none" stroke="#0e6b62" stroke-width="1.8" stroke-linejoin="round"/>
+        <polygon points="8,18 12.33,20.5 12.33,25.5 8,28 3.67,25.5 3.67,20.5" fill="none" stroke="#0e6b62" stroke-width="1.8" stroke-linejoin="round"/>
+        <polygon points="23,7 30.79,11.5 30.79,20.5 23,25 15.21,20.5 15.21,11.5" fill="#0e6b62" stroke="#0e6b62" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>
+      Coalesc
+    </div>
+    <div class="lab">Bioinformatics Lab 1607b</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h1>Remove redundant sequences from a FASTA file</h1>
+    <p>Choose how similar two sequences must be to count as the same group. Coalesc keeps one representative per group and gives you the cluster list.</p>
+  </section>
+
+  <div class="picker">
+    <fieldset>
+      <legend>Task</legend>
+      <div class="seg wide">
+        <label><input type="radio" name="task" value="cluster" checked><span>Cluster one file</span></label>
+        <label><input type="radio" name="task" value="hier"><span>Cluster in levels</span></label>
+        <label><input type="radio" name="task" value="compare"><span>Compare two files</span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Sequence type</legend>
+      <div class="seg">
+        <label><input type="radio" name="stype" value="prot" checked><span>Protein</span></label>
+        <label><input type="radio" name="stype" value="nuc"><span>DNA or RNA</span></label>
+      </div>
+    </fieldset>
+  </div>
+  <p class="mode-note" id="modeNote" aria-live="polite"></p>
+  <div class="warn" id="typeWarn" role="status" hidden></div>
+
+  <div class="tabs" role="tablist" aria-label="Steps">
+    <button type="button" role="tab" id="tb-upload" aria-selected="true" aria-controls="tab-upload" data-tab="upload"><span class="n" id="n1">1</span> File</button>
+    <button type="button" role="tab" id="tb-params" aria-selected="false" aria-controls="tab-params" data-tab="params"><span class="n">2</span> Settings</button>
+    <button type="button" role="tab" id="tb-results" aria-selected="false" aria-controls="tab-results" data-tab="results"><span class="n" id="n3">3</span> Results</button>
+    <span class="fname" id="s1file"></span>
+  </div>
+  <div class="err" id="errMsg" role="alert" hidden></div>
+
+  <!-- File -->
+  <section class="panel" id="tab-upload" role="tabpanel" aria-labelledby="tb-upload">
+    <div class="block">
+      <h2 id="db1Title" hidden>Database (db1)</h2>
+      <label class="drop" id="drop1">
+        <input type="file" class="vh" id="fi1" accept=".fasta,.fa,.faa,.fna,.txt">
+        <strong>Choose a FASTA file, or drop it here</strong>
+        <small>.fasta, .fa, .faa, .fna or .txt, up to 500 MB</small>
+      </label>
+      <div class="filebox" id="pill1">
+        <span class="fn" id="fn1"></span><span class="fs" id="fs1"></span>
+        <button type="button" class="linkbtn" id="rm1">Remove</button>
+      </div>
+    </div>
+
+    <div class="block" id="db2Block" hidden>
+      <h2>Query (db2)</h2>
+      <label class="drop" id="drop2">
+        <input type="file" class="vh" id="fi2" accept=".fasta,.fa,.faa,.fna,.txt">
+        <strong>Choose the db2 FASTA file, or drop it here</strong>
+        <small>Sequences in db2 with no close match in db1 are written to the output.</small>
+      </label>
+      <div class="filebox" id="pill2">
+        <span class="fn" id="fn2"></span><span class="fs" id="fs2"></span>
+        <button type="button" class="linkbtn" id="rm2">Remove</button>
+      </div>
+    </div>
+
+    <div class="block" id="annotRow">
+      <h2><label for="annotLen">Header length in the cluster list <span class="muted" style="font-weight:400">(-d)</span></label></h2>
+      <input type="number" id="annotLen" min="0" max="1000" value="0" style="width:96px">
+      <p class="hint">Number of characters of each sequence header written to the .clstr file. cd-hit itself defaults to 20. This server has always sent 0.</p>
+    </div>
+
+    <div style="margin-top:28px"><button type="button" class="btn plain" id="toParams">Continue to settings</button></div>
+  </section>
+
+  <!-- Settings -->
+  <section class="panel" id="tab-params" role="tabpanel" aria-labelledby="tb-params" hidden>
+
+    <div class="row" id="rowIdStd">
+      <label for="idNum">Identity cut-off <span class="flag">(-c)</span></label>
+      <div>
+        <div class="pair">
+          <input type="number" id="idNum" min="40" max="100" value="90">
+          <input type="range" id="idSlider" min="40" max="100" value="90" aria-label="Identity cut-off slider">
+          <span class="pct">%</span>
+        </div>
+        <p class="hint" id="idHint"></p>
+        <p class="warn" id="idWarn" hidden>Below 50% protein clusters become less reliable. CD-HIT also ships PSI-CD-HIT for that range.</p>
+      </div>
+    </div>
+
+    <div class="row" id="rowIdHier" hidden>
+      <div class="lbl">Levels</div>
+      <div class="levels">
+        <div class="pair" style="margin-bottom:14px">
+          <label for="numRuns" class="muted" style="font-size:14px">Number of runs</label>
+          <select id="numRuns"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
+        </div>
+        <div class="pair" id="lv1"><span class="lv">Run 1</span>
+          <input type="number" id="idH1" min="40" max="100" value="90" aria-label="Run 1 identity">
+          <input type="range" id="idHS1" min="40" max="100" value="90" aria-label="Run 1 slider"><span class="pct">%</span></div>
+        <div class="pair" id="lv2"><span class="lv">Run 2</span>
+          <input type="number" id="idH2" min="40" max="100" value="80" aria-label="Run 2 identity">
+          <input type="range" id="idHS2" min="40" max="100" value="80" aria-label="Run 2 slider"><span class="pct">%</span></div>
+        <div class="pair" id="lv3"><span class="lv">Run 3</span>
+          <input type="number" id="idH3" min="40" max="100" value="60" aria-label="Run 3 identity">
+          <input type="range" id="idHS3" min="40" max="100" value="60" aria-label="Run 3 slider"><span class="pct">%</span></div>
+        <p class="hint">Each run clusters the representatives of the run before it, so the cut-offs must fall from run to run (-c).</p>
+      </div>
+    </div>
+
+    <details id="adv">
+      <summary>Advanced settings <small>defaults are fine for most jobs</small></summary>
+
+      <h3 class="grp">Clustering</h3>
+      <div class="row" id="rowStrand" hidden>
+        <div class="lbl">Compare both strands <span class="flag">(-r)</span></div>
+        <div>
+          <div class="seg"><label><input type="radio" name="strand" value="0"><span>No</span></label><label><input type="radio" name="strand" value="1" checked><span>Yes</span></label></div>
+          <p class="hint">Aligns forward and reverse-complement strands.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="lbl">Global identity <span class="flag">(-G)</span></div>
+        <div>
+          <div class="seg"><label><input type="radio" name="glob" value="0"><span>No</span></label><label><input type="radio" name="glob" value="1" checked><span>Yes</span></label></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="lbl">Closest cluster <span class="flag">(-g)</span></div>
+        <div>
+          <div class="seg"><label><input type="radio" name="bestcl" value="0" checked><span>No</span></label><label><input type="radio" name="bestcl" value="1"><span>Yes</span></label></div>
+          <p class="hint">No puts a sequence in the first cluster that passes the cut-off. Yes checks every cluster and picks the most similar, which is slower.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="lbl">Alignment <span class="flag">(-b, -l, -n)</span></div>
+        <div class="two">
+          <div><b>Band width (-b)</b><input type="number" id="bandwidth" value="20" min="1"></div>
+          <div><b>Min length (-l)</b><input type="number" id="skiplen" value="10" min="0"></div>
+          <div><b>Word size (-n)</b><select id="wordsize"></select><span id="wsHint"></span></div>
+        </div>
+      </div>
+
+      <h3 class="grp">Coverage</h3>
+      <div class="row">
+        <div class="lbl">Longer sequence</div>
+        <div class="two">
+          <div><b>Min coverage (-aL)</b><input type="number" id="aL" value="0.0" min="0" max="1" step="0.1"></div>
+          <div><b>Max unaligned (-AL)</b><input type="number" id="AL" value="99999999" min="0"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="lbl">Shorter sequence</div>
+        <div class="two">
+          <div><b>Min coverage (-aS)</b><input type="number" id="aS" value="0.0" min="0" max="1" step="0.1"></div>
+          <div><b>Max unaligned (-AS)</b><input type="number" id="AS" value="99999999" min="0"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="lbl">Length difference</div>
+        <div class="two">
+          <div><b>Min similarity (-s)</b><input type="number" id="ssim" value="0.0" min="0" max="1" step="0.1"></div>
+          <div><b>Max difference (-S)</b><input type="number" id="Sdiff" value="99999999" min="0"></div>
+        </div>
+      </div>
+
+      <div id="grpLen" hidden>
+        <h3 class="grp">Comparison mode</h3>
+        <div class="row">
+          <div class="lbl">Length control for db2</div>
+          <div class="two">
+            <div><b>Fraction (-s2)</b><input type="number" id="s2val" value="1.0" min="0" max="1" step="0.1"></div>
+            <div><b>Residues or bases (-S2)</b><input type="number" id="S2val" value="0" min="0"></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="grp">Resources</h3>
+      <div class="row">
+        <div class="lbl">Threads and memory</div>
+        <div class="two">
+          <div><b>Threads (-T)</b><input type="number" id="threads" value="8" min="1" max="20"></div>
+          <div><b>Memory in MB (-M)</b><input type="number" id="memory" value="4000" min="500" max="32000" step="500"></div>
+        </div>
+      </div>
+    </details>
+
+    <div class="runbar">
+      <button type="button" class="btn primary" id="runBtn">Run clustering</button>
+      <div class="prog" id="progWrap" hidden>
+        <div class="t"><span id="progLabel">Working</span><span id="progTime">0:00</span></div>
+        <div class="bar" id="progBar"><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="panel" id="tab-results" role="tabpanel" aria-labelledby="tb-results" hidden>
+    <div id="resBody" aria-live="polite">
+      <div class="empty"><b>No results yet</b>Run a job from the Settings tab and the output files will appear here.</div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="cite">
+      <p><strong style="color:var(--ink)">Coalesc</strong> is a web front end for CD-HIT 4.8.1 (Li and Godzik). Files stay on the lab server; uploads are removed when a job ends and results are cleaned up after a few days.</p>
+      <p>Huang Y et al. CD-HIT Suite: a web server for clustering and comparing biological sequences. <i>Bioinformatics</i> 2010;26(5):680–2.<br>Li W, Godzik A. Cd-hit. <i>Bioinformatics</i> 2006;22:1658–9.</p>
+    </div>
+    <nav>
+      <a href="https://github.com/weizhongli/cdhit" target="_blank" rel="noopener">CD-HIT on GitHub</a>
+      <a href="http://cd-hit.org" target="_blank" rel="noopener">cd-hit.org</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const val=name=>{const r=document.querySelector('input[name="'+name+'"]:checked');return r?r.value:null};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MAX_BYTES=500*1048576;
+const names={cluster:['cd-hit','cd-hit-est'],hier:['h-cd-hit','h-cd-hit-est'],compare:['cd-hit-2d','cd-hit-est-2d']};
+const notes={
+  'cd-hit':'Groups similar proteins and keeps the longest sequence of each group as its representative.',
+  'cd-hit-est':'The same idea for DNA or RNA. Not suited to very long sequences such as whole genomes.',
+  'h-cd-hit':'Each pass clusters the representatives of the pass before it, at a lower identity cut-off.',
+  'h-cd-hit-est':'Each pass clusters the representatives of the pass before it, at a lower identity cut-off.',
+  'cd-hit-2d':'Compares a query file (db2) with a database (db1) and writes the db2 proteins that have no close match in db1.',
+  'cd-hit-est-2d':'Compares a query file (db2) with a database (db1) and writes the db2 DNA or RNA sequences that have no close match in db1.'
+};
+let mode='cd-hit',prevNuc=false,tmr=null,t0=0;
+const shown=m=>m.indexOf('h-')===0?m.slice(2)+' in passes':m;
+const det=[null,null,null];
+function sniff(f,idx){
+  det[idx]=null;
+  if(!f||!f.slice){checkType();return}
+  f.slice(0,65536).text().then(t=>{
+    if($('fi'+idx).files[0]!==f)return;
+    let n=0,nt=0;
+    const lines=t.split(/\r?\n/);
+    for(let k=0;k<lines.length&&n<5000;k++){
+      if(lines[k].charAt(0)==='>')continue;
+      const r=lines[k].replace(/[^A-Za-z]/g,'').toUpperCase();
+      for(let i=0;i<r.length;i++){n++;if('ACGTUN'.indexOf(r.charAt(i))>-1)nt++}
+    }
+    det[idx]=n<30?null:(nt/n>=0.9?'nuc':'prot');
+    checkType();
+  }).catch(()=>checkType());
+}
+function checkType(){
+  const want=val('stype'),box=$('typeWarn');
+  const other=det.find(d=>d&&d!==want);
+  if(!other){box.hidden=true;return}
+  const msg=document.createElement('span');
+  msg.textContent=other==='prot'
+    ?'The file you chose looks like protein, but DNA or RNA is selected. Run this way, almost nothing will group together. '
+    :'The file you chose looks like DNA or RNA, but Protein is selected. ';
+  const b=document.createElement('button');
+  b.type='button';b.className='linkbtn';
+  b.textContent=other==='prot'?'Switch to Protein':'Switch to DNA or RNA';
+  b.addEventListener('click',()=>{
+    const r=document.querySelector('input[name="stype"][value="'+other+'"]');
+    r.checked=true;r.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  box.textContent='';box.appendChild(msg);box.appendChild(b);box.hidden=false;
+}
+
+/* ---------- mode ---------- */
+/* CD-HIT 4.8.1 rejects protein word sizes that are too long for the identity cut-off (measured: 40-46% -> 2, 47-55% -> 3, 56-62% -> 4, 63-100% -> 5) */
+const protMaxN=p=>p>=63?5:p>=56?4:p>=47?3:2;
+function updateWordOptions(){
+  const sel=$('wordsize'),hint=$('wsHint');
+  const enableAll=()=>{Array.prototype.forEach.call(sel.options,o=>{o.disabled=false});hint.textContent=''};
+  if(val('stype')==='nuc'){enableAll();return}
+  let p;
+  if(val('task')==='hier'){
+    const runs=parseInt($('numRuns').value,10);
+    const v=[1,2,3].slice(0,runs).map(i=>parseInt($('idH'+i).value,10)).filter(x=>!isNaN(x));
+    p=v.length?Math.min.apply(null,v):NaN;
+  }else p=parseInt($('idNum').value,10);
+  if(isNaN(p)){enableAll();return}
+  const max=protMaxN(p);
+  Array.prototype.forEach.call(sel.options,o=>{const n=parseInt(o.value,10);o.disabled=n>0&&n>max});
+  if(sel.options[sel.selectedIndex]&&sel.options[sel.selectedIndex].disabled)sel.value='0';
+  hint.textContent='At '+p+'% the largest word size CD-HIT accepts is '+max+'.';
+}
+function setWordOptions(nuc){
+  const opts=nuc?[4,5,6,7,8,9,10,11]:[2,3,4,5];
+  $('wordsize').innerHTML='<option value="0">Auto</option>'+opts.map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+}
+function applyMode(){
+  hideErr();
+  const task=val('task'),nuc=val('stype')==='nuc';
+  const is2d=task==='compare',hier=task==='hier';
+  mode=names[task][nuc?1:0];
+  $('modeNote').textContent='Runs '+shown(mode)+'. '+notes[mode];
+  $('db1Title').hidden=!is2d;
+  $('db2Block').hidden=!is2d;
+  $('annotRow').hidden=is2d;
+  $('rowIdStd').hidden=hier;
+  $('rowIdHier').hidden=!hier;
+  $('rowStrand').hidden=!nuc;
+  $('grpLen').hidden=!is2d;
+  $('runBtn').textContent=is2d?'Run comparison':'Run clustering';
+
+  const min=nuc?80:40;
+  ['idNum','idSlider','idH1','idH2','idH3','idHS1','idHS2','idHS3'].forEach(id=>{
+    const el=$(id);el.min=min;if(parseInt(el.value,10)<min)el.value=min;
+  });
+  if(nuc!==prevNuc){
+    setWordOptions(nuc);
+    const d=nuc?[95,90,85]:[90,80,60];
+    [1,2,3].forEach((n,i)=>{$('idH'+n).value=d[i];$('idHS'+n).value=d[i]});
+    prevNuc=nuc;
+  }
+  $('idHint').textContent=nuc
+    ?'DNA and RNA: 80 to 100%. Sequences at least this similar go in the same cluster.'
+    :'Proteins: 40 to 100%. Sequences at least this similar go in the same cluster.';
+  checkWarn();
+  updateRuns();
+  checkType();
+  updateWordOptions();
+}
+function checkWarn(){
+  const nuc=val('stype')==='nuc';
+  $('idWarn').hidden=nuc||!(parseInt($('idNum').value,10)<50);
+}
+function updateRuns(){
+  const n=parseInt($('numRuns').value,10);
+  $('lv2').hidden=n<2;$('lv3').hidden=n<3;
+}
+function pair(nId,rId,after){
+  const n=$(nId),r=$(rId);
+  n.addEventListener('input',()=>{const v=parseInt(n.value,10);if(!isNaN(v))r.value=v;if(after)after()});
+  r.addEventListener('input',()=>{n.value=r.value;if(after)after()});
+}
+pair('idNum','idSlider',()=>{checkWarn();updateWordOptions()});
+pair('idH1','idHS1',updateWordOptions);pair('idH2','idHS2',updateWordOptions);pair('idH3','idHS3',updateWordOptions);
+document.querySelectorAll('input[name="task"],input[name="stype"]').forEach(r=>r.addEventListener('change',applyMode));
+$('numRuns').addEventListener('change',()=>{updateRuns();updateWordOptions()});
+
+/* ---------- tabs ---------- */
+function showTab(tab){
+  ['upload','params','results'].forEach(t=>{
+    const on=t===tab;
+    $('tab-'+t).hidden=!on;
+    $('tb-'+t).setAttribute('aria-selected',on?'true':'false');
+  });
+}
+document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+$('toParams').addEventListener('click',()=>showTab('params'));
+
+/* ---------- files ---------- */
+function fmtSize(b){return b>=1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+function setFile(f,idx){
+  if(f.size>MAX_BYTES){showErr('That file is '+fmtSize(f.size)+'. The limit is 500 MB.');clearFile(idx);return}
+  $('fn'+idx).textContent=f.name;
+  $('fs'+idx).textContent=fmtSize(f.size);
+  $('pill'+idx).style.display='flex';
+  if(idx===1){$('s1file').textContent=f.name;$('n1').textContent='\u2713';$('tb-upload').classList.add('done')}
+  hideErr();
+  sniff(f,idx);
+}
+function clearFile(idx){
+  $('fi'+idx).value='';
+  $('pill'+idx).style.display='none';
+  if(idx===1){$('s1file').textContent='';$('n1').textContent='1';$('tb-upload').classList.remove('done')}
+  det[idx]=null;checkType();
+}
+[1,2].forEach(idx=>{
+  const drop=$('drop'+idx),inp=$('fi'+idx);
+  ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('over')}));
+  ['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('over')}));
+  drop.addEventListener('drop',ev=>{
+    const files=ev.dataTransfer&&ev.dataTransfer.files;
+    if(files&&files.length){inp.files=files;setFile(files[0],idx)}
+  });
+  inp.addEventListener('change',()=>{if(inp.files[0])setFile(inp.files[0],idx)});
+  $('rm'+idx).addEventListener('click',()=>clearFile(idx));
+});
+
+/* ---------- messages / progress ---------- */
+function showErr(m){const e=$('errMsg');e.textContent=m;e.hidden=false}
+function hideErr(){$('errMsg').hidden=true}
+function startTimer(){t0=Date.now();$('progTime').textContent='0:00';tmr=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);$('progTime').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')},1000)}
+function stopTimer(){clearInterval(tmr);return Math.round((Date.now()-t0)/1000)}
+function fmtTime(s){return s<60?s+' s':Math.floor(s/60)+' min '+(s%60)+' s'}
+function setProg(pct,label){
+  const bar=$('progBar');
+  $('progLabel').textContent=label;
+  if(pct===null){bar.classList.add('ind');bar.firstElementChild.style.width=''}
+  else{bar.classList.remove('ind');bar.firstElementChild.style.width=pct+'%'}
+}
+function finishRun(){$('runBtn').disabled=false;$('progWrap').hidden=true}
+function failRun(msg){
+  stopTimer();finishRun();showErr(msg);
+  $('resBody').innerHTML='<div class="empty"><b>The job did not finish</b>'+esc(msg)+'</div>';
+}
+
+/* ---------- submit ---------- */
+function submitJob(){
+  hideErr();
+  const f1=$('fi1').files[0];
+  const task=val('task'),is2d=task==='compare',isHier=task==='hier',nuc=val('stype')==='nuc';
+  if(!f1){showErr('Choose a FASTA file first.');showTab('upload');return}
+  if(is2d&&!$('fi2').files[0]){showErr('This task needs a second file (db2).');showTab('upload');return}
+  const min=nuc?80:40;
+  const runs=parseInt($('numRuns').value,10);
+  const lv=[parseInt($('idH1').value,10),parseInt($('idH2').value,10),parseInt($('idH3').value,10)];
+  const idv=isHier?lv[0]:parseInt($('idNum').value,10);
+  if(isNaN(idv)||idv<min||idv>100){showErr('Identity cut-off must be between '+min+'% and 100% for this sequence type.');return}
+  if(isHier){
+    for(let i=0;i<runs;i++){if(isNaN(lv[i])||lv[i]<min||lv[i]>100){showErr('Run '+(i+1)+' needs a cut-off between '+min+'% and 100%.');return}}
+    for(let i=1;i<runs;i++){if(lv[i]>=lv[i-1]){showErr('Cut-offs must fall from run to run. Run '+(i+1)+' ('+lv[i]+'%) should be lower than run '+i+' ('+lv[i-1]+'%).');return}}
+  }
+
+  $('runBtn').disabled=true;
+  $('progWrap').hidden=false;
+  setProg(0,'Uploading');
+  $('n3').textContent='3';$('tb-results').classList.remove('done');
+  $('resBody').innerHTML='<div class="working"><i></i><span>Running '+esc(shown(mode))+'. Results will appear here.</span></div>';
+  startTimer();
+
+  const fd=new FormData();
+  fd.append('file',f1);
+  if(is2d&&$('fi2').files[0])fd.append('file2',$('fi2').files[0]);
+  fd.append('mode',mode);
+  fd.append('identity',idv/100);
+  fd.append('global_identity',val('glob'));
+  fd.append('best_cluster',val('bestcl'));
+  fd.append('strand',val('strand'));
+  fd.append('annot',is2d?'0':String(Math.max(0,parseInt($('annotLen').value,10)||0)));
+  fd.append('bandwidth',$('bandwidth').value);
+  fd.append('skip_len',$('skiplen').value);
+  fd.append('word_size',$('wordsize').value);
+  fd.append('aL',$('aL').value);
+  fd.append('AL',$('AL').value);
+  fd.append('aS',$('aS').value);
+  fd.append('AS',$('AS').value);
+  fd.append('s_sim',$('ssim').value);
+  fd.append('S_diff',$('Sdiff').value);
+  fd.append('s2val',$('s2val').value);
+  fd.append('S2val',$('S2val').value);
+  fd.append('threads',$('threads').value);
+  fd.append('memory',$('memory').value);
+  if(isHier){
+    fd.append('num_runs',runs);
+    fd.append('identity2',lv[1]/100);
+    fd.append('identity3',lv[2]/100);
+  }
+
+  const xhr=new XMLHttpRequest();
+  xhr.open('POST','/run');
+  xhr.upload.onprogress=e=>{
+    if(!e.lengthComputable)return;
+    const p=Math.round(e.loaded/e.total*100);
+    if(p<100)setProg(p,'Uploading '+p+'%');else setProg(null,'Running '+shown(mode));
+  };
+  xhr.upload.onload=()=>setProg(null,'Running '+shown(mode));
+  xhr.onerror=()=>failRun('Could not reach the server. Check that the cdhit service is running, then try again.');
+  xhr.onload=()=>{
+    let d=null;
+    try{d=JSON.parse(xhr.responseText)}catch(_){}
+    if(!d){failRun('The server answered with HTTP '+xhr.status+' and no readable result. If the file is large, the upload may have been rejected.');return}
+    if(d.error){failRun(String(d.error));return}
+    const secs=stopTimer();finishRun();
+    renderResults(d,secs,mode,false);
+    try{const keep=Object.assign({},d,{log:String(d.log||'').slice(0,20000)});localStorage.setItem('coalesc:last',JSON.stringify({d:keep,m:mode,secs:secs}))}catch(_){}
+    showTab('results');
+  };
+  xhr.send(fd);
+}
+$('runBtn').addEventListener('click',submitJob);
+
+/* ---------- results ---------- */
+function renderResults(d,secs,m,restored){
+  const is2d=m.indexOf('2d')>-1,isH=m.indexOf('h-')===0&&d.clstr_full!==true;
+  const inN=Number(d.n_input)||0,outN=Number(d.n_output)||0,cl=Number(d.n_clusters)||0,red=Number(d.reduction)||0;
+  const jid=String(d.job_id);
+  const pct=inN?Math.min(100,outN/inN*100):0;
+  const lead=is2d
+    ?'The database (db1) holds '+inN.toLocaleString()+' sequences. The output file holds '+outN.toLocaleString()+' sequences from db2 that have no close match in db1.'
+    :inN.toLocaleString()+' sequences fell into '+cl.toLocaleString()+' clusters. Keeping one representative per cluster removes '+red+'% of the input.';
+  $('resBody').innerHTML=
+    '<div class="res-head"><h2>'+(restored?'Last run':'Finished')+'</h2><span>'+esc(shown(m))+', job '+esc(jid)+(secs?', '+fmtTime(secs):'')+'</span></div>'+
+    '<p class="lead">'+esc(lead)+'</p>'+
+    (is2d?'':'<div class="cmp">'+
+      '<span class="name">Input</span><div class="track full"><i style="width:100%"></i></div><span class="v">'+inN.toLocaleString()+'</span>'+
+      '<span class="name">'+(is2d?'Output':'Representatives')+'</span><div class="track"><i style="width:'+pct.toFixed(1)+'%"></i></div><span class="v">'+outN.toLocaleString()+'</span>'+
+    '</div>')+
+    (is2d?'':'<dl class="facts"><div><dt>Clusters</dt><dd>'+cl.toLocaleString()+'</dd></div><div><dt>Removed</dt><dd>'+red+'%</dd></div><div><dt id="bigLbl">'+(isH?'Largest last-pass cluster':'Largest cluster')+'</dt><dd id="bigVal">\u2013</dd></div></dl>')+
+    '<div class="hist" id="hist" hidden></div>'+
+    '<div class="dl"><a class="btn primary" download="'+esc(jid)+(is2d?'_unmatched_db2.fasta':'_representatives.fasta')+'" href="/download/'+encodeURIComponent(jid)+'/fasta">'+(is2d?'Download unmatched db2 sequences (.fasta)':'Download representatives (.fasta)')+'</a>'+
+    '<a class="btn plain" download="'+esc(jid)+'_clusters.clstr" href="/download/'+encodeURIComponent(jid)+'/clstr">Download cluster list (.clstr)</a></div>'+
+    '<p class="dlnote">'+(is2d?'The .fasta file holds the db2 sequences with no close match in db1. The .clstr file is the cluster list from the comparison.':'The .fasta file has one sequence per cluster, ready for training or analysis. '+(isH?'The .clstr file covers the last pass only: it groups the representatives from the pass before it, not your original sequences.':'The .clstr file lists every input sequence with its cluster and its identity to the representative.'))+'</p>'+
+    '<details class="logwrap"><summary>Program output</summary><pre id="logBox"></pre></details>';
+  $('logBox').textContent=d.log||'(no output)';
+  $('n3').textContent='\u2713';$('tb-results').classList.add('done');
+  if(!is2d)drawHist(jid,isH);
+}
+function drawHist(jid,isH){
+  fetch('/download/'+encodeURIComponent(jid)+'/clstr').then(r=>r.ok?r.text():Promise.reject()).then(t=>{
+    const sizes=[];let c=-1;
+    t.split('\n').forEach(line=>{
+      if(line.charAt(0)==='>'){if(c>=0)sizes.push(c);c=0}
+      else if(c>=0&&line.trim())c++;
+    });
+    if(c>=0)sizes.push(c);
+    if(!sizes.length)return;
+    const bins=[['1 (singletons)',s=>s===1],['2',s=>s===2],['3 to 5',s=>s>=3&&s<=5],['6 to 10',s=>s>=6&&s<=10],['11 to 50',s=>s>=11&&s<=50],['51 or more',s=>s>=51]]
+      .map(b=>({l:b[0],n:sizes.filter(b[1]).length}));
+    const max=Math.max.apply(null,bins.map(b=>b.n))||1;
+    const big=Math.max.apply(null,sizes);
+    if($('bigVal'))$('bigVal').textContent=big.toLocaleString();
+    const h=$('hist');if(!h)return;
+    h.innerHTML='<h3>Cluster sizes</h3><p>Number of clusters with this many members.'+(isH?' Members here are representatives from the previous pass.':'')+'</p>'+
+      bins.map(b=>'<div class="r"><span>'+b.l+'</span><i style="width:'+(b.n/max*100).toFixed(1)+'%"></i><b>'+b.n.toLocaleString()+'</b></div>').join('');
+    h.hidden=false;
+  }).catch(()=>{});
+}
+
+/* ---------- start ---------- */
+setWordOptions(false);
+applyMode();
+try{
+  const saved=JSON.parse(localStorage.getItem('coalesc:last')||'null');
+  if(saved&&saved.d&&saved.d.job_id)renderResults(saved.d,saved.secs,saved.m||'cd-hit',true);
+}catch(_){}
+})();
+</script>
+</body>
+</html>

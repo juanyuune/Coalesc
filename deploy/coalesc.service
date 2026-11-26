@@ -1,0 +1,15 @@
+[Unit]
+Description=Coalesc - CD-HIT web interface
+After=network.target
+
+[Service]
+User=coalesc
+Group=coalesc
+WorkingDirectory=/opt/coalesc
+EnvironmentFile=/etc/coalesc.env
+# Development server, fine for a small lab. For more users use gunicorn (see docs/deployment.md).
+ExecStart=/opt/coalesc/.venv/bin/python -m coalesc
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

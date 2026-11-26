@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coalesc"
+version = "1.0.0"
+description = "A small web interface for the CD-HIT sequence clustering suite"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["flask>=3.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "playwright>=1.40", "gunicorn>=22"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+coalesc = ["templates/*.html"]
