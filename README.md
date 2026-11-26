@@ -18,7 +18,7 @@ representative sequences and the cluster list. Built for a lab server.
 
 ## Quick start
 ```bash
-git clone https://github.com/<you>/coalesc && cd coalesc
+git clone https://github.com/juanyuune/Coalesc && cd coalesc
 python3 -m venv .venv && . .venv/bin/activate
 pip install .
 export COALESC_BIN_DIR=/path/to/cdhit/bin     # optional if cd-hit is on PATH

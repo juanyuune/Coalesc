@@ -10,7 +10,7 @@ Tested on Ubuntu 24.04 (WSL2) with CD-HIT 4.8.1 and Flask 3.1. Other setups are 
 ## 2. Install
 ```bash
 sudo useradd --system --home /opt/coalesc --shell /usr/sbin/nologin coalesc
-sudo git clone https://github.com/<you>/coalesc /opt/coalesc
+sudo git clone https://github.com/juanyuune/Coalesc /opt/coalesc
 cd /opt/coalesc && sudo python3 -m venv .venv && sudo .venv/bin/pip install .
 sudo install -d -o coalesc -g coalesc -m 750 /opt/compbio/cdhit-server/{uploads,results}
 sudo cp .env.example /etc/coalesc.env     # then edit
