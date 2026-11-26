@@ -3,11 +3,17 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      CDHIT_TAG: V4.8.1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - name: Install CD-HIT from apt
-        run: sudo apt-get update && sudo apt-get install -y cd-hit perl
+      - name: Build CD-HIT from source
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential zlib1g-dev perl
+          git clone --depth 1 --branch "$CDHIT_TAG" https://github.com/weizhongli/cdhit.git "$RUNNER_TEMP/cdhit"
+          make -C "$RUNNER_TEMP/cdhit"
+          echo "COALESC_BIN_DIR=$RUNNER_TEMP/cdhit" >> "$GITHUB_ENV"
       - run: pip install -e ".[dev]"
       - run: pytest -m "not ui"

@@ -5,16 +5,17 @@ from pathlib import Path
 import pytest
 
 from coalesc import create_app
-from coalesc.config import Config, discover_bin_dir
+from coalesc.config import Config
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
-HAVE_CDHIT = discover_bin_dir() is not None
+BIN_DIR = Config.from_env().bin_dir
+HAVE_CDHIT = BIN_DIR is not None
 needs_cdhit = pytest.mark.skipif(not HAVE_CDHIT, reason="CD-HIT (cd-hit, cd-hit-est) not installed")
 
 
 @pytest.fixture
 def cfg(tmp_path):
-    return Config(bin_dir=discover_bin_dir(), upload_dir=tmp_path / "up", results_dir=tmp_path / "res",
+    return Config(bin_dir=BIN_DIR, upload_dir=tmp_path / "up", results_dir=tmp_path / "res",
                   job_timeout_s=120)
 
 
