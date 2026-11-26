@@ -40,7 +40,7 @@ scripts/       test-data generator
 deploy/        systemd unit and tmpfiles rule
 docs/          architecture, deployment, development
 ```
-See [docs/deployment.md](docs/deployment.md) — note there is **no authentication**.
+See [docs/deployment.md](docs/deployment.md). Note that there is no login.
 
 ## Tests
 `pytest` (needs CD-HIT on PATH). See [docs/development.md](docs/development.md).

@@ -1,7 +1,4 @@
-"""Browser tests: drive the real page against the real server and CD-HIT.
-
-Run with ``pytest -m ui`` (needs ``pip install -r requirements-dev.txt`` and a Chrome/Chromium;
-set CHROME_PATH if it is not at /usr/bin/google-chrome)."""
+"""Browser tests. Need playwright and Chrome (set CHROME_PATH if not /usr/bin/google-chrome)."""
 import os
 import threading
 from pathlib import Path

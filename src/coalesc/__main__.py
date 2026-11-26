@@ -1,4 +1,3 @@
-"""``python -m coalesc`` starts the development server."""
 from . import create_app
 from .config import Config
 

@@ -1,4 +1,4 @@
-"""Small helpers around the CD-HIT programs: modes, file sniffing, running, merging."""
+"""CD-HIT helpers."""
 from __future__ import annotations
 
 import os
@@ -12,7 +12,7 @@ ALLOWED_EXTENSIONS = {"fasta", "fa", "faa", "fna", "txt"}
 
 @dataclass(frozen=True)
 class Mode:
-    """One of the six tasks offered by the web page."""
+    # one of the six tasks on the page
 
     name: str
     nucleotide: bool
@@ -21,16 +21,12 @@ class Mode:
 
     @property
     def program(self) -> str:
-        """The CD-HIT executable that is actually run.
-
-        A "levels" job runs plain cd-hit / cd-hit-est once per pass, so the h-cd-hit
-        wrapper scripts are never needed.
-        """
+        # levels jobs run plain cd-hit / cd-hit-est once per pass, so h-cd-hit is not needed
         base = "cd-hit-est" if self.nucleotide else "cd-hit"
         return base + "-2d" if self.two_d else base
 
 
-#: Only these names are accepted from the browser. Never build a program path from user input.
+# only these names are accepted from the browser
 MODES: dict[str, Mode] = {
     "cd-hit": Mode("cd-hit", nucleotide=False, two_d=False, levels=False),
     "cd-hit-est": Mode("cd-hit-est", nucleotide=True, two_d=False, levels=False),
@@ -46,7 +42,7 @@ def allowed_filename(name: str) -> bool:
 
 
 def auto_word_size(identity: float, nucleotide: bool) -> int:
-    """Word size (-n) to use for an identity cut-off. Always inside CD-HIT's accepted range."""
+    # word size (-n) for an identity cut-off, within what CD-HIT accepts
     if nucleotide:
         if identity >= 0.90:
             return 11
@@ -81,15 +77,13 @@ def count_clusters(path: str | os.PathLike) -> int:
 
 
 def count_members(clstr_text: str) -> int:
-    """Number of sequence lines in the text of a .clstr file."""
     return sum(1 for line in clstr_text.splitlines() if line.strip() and not line.startswith(">"))
 
 
 def sniff_seq_type(path: str | os.PathLike, limit: int = 5000) -> str | None:
-    """Guess whether a FASTA file holds nucleotide ('nuc') or protein ('prot') sequences.
+    """Return 'nuc', 'prot', or None if there is too little sequence to tell.
 
-    Looks at the first ``limit`` letters. A file counts as nucleotide when at least 90 % of
-    them are A, C, G, T, U or N. Returns None when there is too little sequence to tell.
+    Nucleotide means at least 90% of the first `limit` letters are A, C, G, T, U or N.
     """
     letters = nuc = 0
     try:
@@ -112,14 +106,11 @@ def sniff_seq_type(path: str | os.PathLike, limit: int = 5000) -> str | None:
 
 
 class Runner:
-    """Finds and runs CD-HIT programs."""
-
     def __init__(self, bin_dir: Path | None, timeout: int):
         self.bin_dir = bin_dir
         self.timeout = timeout
 
     def find(self, name: str) -> str | None:
-        """Absolute path of a CD-HIT tool, looked up in bin_dir first, then on PATH."""
         if self.bin_dir is not None:
             candidate = Path(self.bin_dir) / name
             if candidate.is_file():
@@ -134,11 +125,9 @@ class Runner:
 
 
 def merge_pass_clstrs(runner: Runner, paths: list[str]) -> str | None:
-    """Combine the .clstr files of successive passes into one covering every original sequence.
+    """Merge the .clstr files of the passes with CD-HIT's clstr_rev.pl.
 
-    Uses CD-HIT's own ``clstr_rev.pl`` (pass 1 + pass 2 -> merged, merged + pass 3 -> ...).
-    Returns the merged text, or None when the script is missing or the result looks wrong
-    (the caller then falls back to the last pass's file).
+    Returns the merged text, or None if the script is missing or the result looks wrong.
     """
     script = runner.find("clstr_rev.pl")
     if script is None:

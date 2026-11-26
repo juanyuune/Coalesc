@@ -1,4 +1,4 @@
-"""Runtime settings, read from ``COALESC_*`` environment variables."""
+"""Settings from COALESC_* environment variables."""
 from __future__ import annotations
 
 import os
@@ -20,7 +20,6 @@ def _int_env(name: str, default: int) -> int:
 
 
 def discover_bin_dir() -> Path | None:
-    """Folder holding the CD-HIT programs on PATH, or None if none is found."""
     for name in ("cd-hit-est", "cd-hit"):
         found = shutil.which(name)
         if found:
@@ -30,8 +29,6 @@ def discover_bin_dir() -> Path | None:
 
 @dataclass(frozen=True)
 class Config:
-    """All settings of one Coalesc instance."""
-
     bin_dir: Path | None = None          # folder with cd-hit, cd-hit-est, ... (and clstr_rev.pl)
     upload_dir: Path = Path("instance/uploads")
     results_dir: Path = Path("instance/results")

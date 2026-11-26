@@ -1,4 +1,4 @@
-"""HTTP routes: the page, /run, /download."""
+"""Routes."""
 from __future__ import annotations
 
 import os

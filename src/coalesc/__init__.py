@@ -1,4 +1,4 @@
-"""Coalesc: a small web front end for the CD-HIT sequence clustering suite."""
+"""Coalesc, a web front end for CD-HIT."""
 from __future__ import annotations
 
 from flask import Flask

@@ -1,4 +1,4 @@
-"""Turn a validated request into CD-HIT command lines and run them."""
+"""Build the CD-HIT command lines and run them."""
 from __future__ import annotations
 
 import os
@@ -12,8 +12,6 @@ from .cdhit import (Mode, Runner, auto_word_size, count_clusters, count_seqs,
 
 
 class JobError(Exception):
-    """A problem to report to the user. ``status`` is the HTTP status code."""
-
     def __init__(self, message: str, status: int = 500):
         super().__init__(message)
         self.status = status
@@ -21,8 +19,7 @@ class JobError(Exception):
 
 @dataclass
 class Params:
-    """Validated form values. Strings are kept as strings once checked, so they can go
-    straight onto the command line without any shell involved."""
+    """Form values after validation."""
 
     mode: Mode
     identity: float = 0.90
